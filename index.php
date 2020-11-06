@@ -13,21 +13,16 @@
 
     <!-- Bootstrap core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Custom styles for this template -->
     <link href="style.css" rel="stylesheet">
-
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
+<body>
 
-  <body>
-
-
- 
 <div class="container">
       <div class="header clearfix">
         <nav>
@@ -41,7 +36,7 @@
 	<div class="jumbotron">
 		<form action="" method="post">
 			<div class="form-group">
-				<input class="form-control input-lg text-center" name ="domain" type="text" placeholder="<?php if(isset($_POST['submit'])) { echo($_POST['domain']); }else{echo("www.domain.com");} ?>" requirerd>
+				<input class="form-control input-lg text-center" pattern="^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$" title="Please enter a valid domain format such as domain.com." name="domain" type="text" placeholder="<?php if(isset($_REQUEST['submit'])) { echo($_REQUEST['domain']); }else{echo("domain.com");} ?>" required>
 	        	<button type="submit" name="submit" class="btn btn-primary btn-lg">Lookup DNS</button>
 			</div>
 		</form>
@@ -51,17 +46,24 @@
 
 		<?php
 
-			if(isset($_POST['submit']))
-					{
-						$domain_regex = '/[a-z\d][a-z\-\d\.]+[a-z\d]/i';
-						$domain = $_POST['domain'];
-						$dns_a = dns_get_record($domain, DNS_A);
-						$dns_ns = dns_get_record($domain, DNS_NS);
-						$dns_mx = dns_get_record($domain, DNS_MX);
-						$dns_soa = dns_get_record($domain, DNS_SOA);
-						$dns_txt = dns_get_record($domain, DNS_TXT);
-						$dns_aaaa = dns_get_record($domain, DNS_AAAA);
-						$dns_all = dns_get_record($domain, DNS_ALL);
+			if(isset($_REQUEST['submit']) || isset($_GET['domain']))	{
+        $domain = $_REQUEST['domain'];
+
+        var_dump(filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME));
+
+        if (filter_var($domain, FILTER_VALIDATE_DOMAIN)) {
+
+					$dns_a = dns_get_record($domain, DNS_A);
+					$dns_ns = dns_get_record($domain, DNS_NS);
+					$dns_mx = dns_get_record($domain, DNS_MX);
+					$dns_soa = dns_get_record($domain, DNS_SOA);
+					$dns_txt = dns_get_record($domain, DNS_TXT);
+					$dns_aaaa = dns_get_record($domain, DNS_AAAA);
+					$dns_all = dns_get_record($domain, DNS_ALL);
+        }else{
+          echo 'Invalid Domain format';
+          die();
+        }
 
 		?>
 
@@ -70,14 +72,14 @@
 					<td class="text-center">Record</td>
 					<td class="text-center">Class</td>
 					<td class="text-center">TTL</td>
-					<td>Details for <?php echo($_POST['domain']); ?></td>
+					<td>Details for <?php echo($_REQUEST['domain']); ?></td>
 			</thead>
 			<tr>
 				<td class="vert-align text-center"><h4><span class="label label-primary"><?php echo($dns_a[0]['type']); ?></span></h4></td>
 				<td class="vert-align text-center"><?php echo($dns_a[0]['class']); ?></td>
 				<td class="vert-align text-center"><?php echo($dns_a[0]['ttl']); ?></td>
 				<td>
-					<?php 
+					<?php
 					foreach($dns_a as $value)
 						{
 							?>	<h4>
@@ -101,7 +103,7 @@
 				<td class="vert-align text-center"><?php echo($dns_aaaa[0]['class']); ?></td>
 				<td class="vert-align text-center"><?php echo($dns_aaaa[0]['ttl']); ?></td>
 				<td>
-					<?php 
+					<?php
 					foreach($dns_aaaa as $value)
 						{
 							?><h4>
@@ -116,7 +118,7 @@
 				<td class="vert-align text-center"><?php echo($dns_ns[0]['class']); ?></td>
 				<td class="vert-align text-center"><?php echo($dns_ns[0]['ttl']); ?></td>
 				<td>
-					<?php 
+					<?php
 					foreach($dns_ns as $value)
 						{
 							?><h4>
@@ -131,11 +133,11 @@
 				<td class="vert-align text-center"><?php echo($dns_mx[0]['class']); ?></td>
 				<td class="vert-align text-center"><?php echo($dns_mx[0]['ttl']); ?></td>
 				<td>
-					<?php 
+					<?php
 					foreach($dns_mx as $value)
 						{
 							?><h4>
-								[<?php  echo($value['pri']); ?>] 
+								[<?php  echo($value['pri']); ?>]
 								<?php  echo($value['target']); ?>
 								(<?php echo(gethostbyname($value['target'])) ?>)
 							</h4>
@@ -178,7 +180,7 @@
 ?>
 
       <footer class="footer">
-        <p>&copy; 2015 - Simple DNS Lookup</p>
+        <p>&copy; <?php echo date("Y"); ?> - Simple DNS Lookup</p>
       </footer>
 
     </div> <!-- /container -->
